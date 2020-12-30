@@ -92,8 +92,12 @@ def getData():
 		name  = request.args.get('name', None)
 		nif  = request.args.get('nif', None)
 		key_nif  = request.args.get('key_nif', None)
+		key_google  = request.args.get('key_google', None)
+		address  = request.args.get('address', None)
+		city  = request.args.get('city', None)		
+		country  = request.args.get('country', None)
 		if name or nif:			
-			response = s.getData(service=service, name=name, nif=nif, key_nif=key_nif)
+			response = s.getData(service=service, name=name, nif=nif, key_nif=key_nif, key_google=key_google, address=address,city=city,country=country)
 			return jsonify(response)
 		else:
 			return jsonify({"error": "You must specify a name and/or its nif number!"})
@@ -108,11 +112,15 @@ def getAllData():
 	name  = request.args.get('name', None)
 	nif  = request.args.get('nif', None)
 	key_nif  = request.args.get('key_nif', None)
+	key_google  = request.args.get('key_google', None)
+	address  = request.args.get('address', None)
+	city  = request.args.get('city', None)		
+	country  = request.args.get('country', None)	
 	if name or nif:		
-		response = s.getAll(name=name, nif=nif, key_nif=key_nif)
+		response = s.getAll(name=name, nif=nif, key_nif=key_nif, key_google=key_google, address=address,city=city,country=country)
 		return jsonify(response)
 	else:
-		return jsonify({"error": "You must specify a name and/or its nif number!"})
+		return jsonify({"error": "You must specify, at least, a name and/or its nif number!"})
 
 
 

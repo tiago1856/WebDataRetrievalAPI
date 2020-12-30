@@ -554,6 +554,7 @@ class WebDataRetrieval():
 
 		result['service']  = 'nif'
 		result['status'] = 'NOT FOUNDED'
+		result['url']  = self.SERVICES_BASE_URLS['nif']
 		
 		if results.get('result') and results.get('result') != 'success':
 			if results.get('result') == 'error':
@@ -645,22 +646,22 @@ class WebDataRetrieval():
 		return result
 
 
-	def getGoogleInfo(self, address=None, name=None, city=None, country=None, google_key=None):
+	def getGoogleInfo(self, address=None, name=None, city=None, country=None, key_google=None):
 
-		if not google_key:
+		if not key_google:
 			raise RuntimeError("Requires a key! Check https://developers.google.com/maps/documentation/geocoding/get-api-key for more information.")
 
-		if not addr and not name:
+		if not address and not name:
 			raise RuntimeError("Requires either a name or an address!")
 
 
-		addr = "" if address is None else address
+		addr = name if address is None else address
 		addr = addr + ("" if city is None else ", " + city)
 		addr = addr + ("" if country is None else ", " + country)
 
 
 		# start service
-		geolocator_google = GoogleV3(api_key=google_key)
+		geolocator_google = GoogleV3(api_key=key_google)
 
 		# fetch the data
 		data = geolocator_google.geocode(addr,exactly_one=False)
@@ -668,15 +669,19 @@ class WebDataRetrieval():
 		result = self.newResult()
 		result['service']  = 'google'
 		result['status'] = 'NOT FOUNDED'
+		result['url']  = self.SERVICES_BASE_URLS['google']
 
 		if data:
+			if "status" in data and data["status"] =="ZERO_RESULTS":
+				return result
+			
 			answer = data[0].raw
 
 			result['status'] = "OK"		
 			result["morada"] = data[0].address
 			result["latitude"] = data[0].latitude
 			result["longitude"] = data[0].longitude
-			result["postcode"] = ",".join([x['long_name'] for x in answer.get('address_components') 
+			result["codigo_postal"] = ",".join([x['long_name'] for x in answer.get('address_components') 
 									  if 'postal_code' in x.get('types')])
 			result["localidade"] = ",".join([x['long_name'] for x in answer.get('address_components') 
 									  if 'locality' in x.get('types')]).split(',')[0]
@@ -690,7 +695,7 @@ class WebDataRetrieval():
 
 
 
-	def getData(self, service="racius", name=None, address=None, city=None, country=None, nif=None, key_nif=None, google_key=None):
+	def getData(self, service=None, name=None, address=None, city=None, country=None, nif=None, key_nif=None, key_google=None):
 		if not service:
 			raise RuntimeError ("No service specified!")
 		if name:
@@ -706,7 +711,7 @@ class WebDataRetrieval():
 		elif service == "nif":
 			return self.getNifInfo(nif, key_nif)
 		elif service == "google":
-			 return self.getGoogleInfo(address=address, name=name, city=city, country=country, google_key=google_key)
+			 return self.getGoogleInfo(address=address, name=name, city=city, country=country, key_google=key_google)
 		else:
 			raise RuntimeError ("Service [{}] is not available!".format(service))
 				
@@ -717,22 +722,18 @@ class WebDataRetrieval():
 	# NOTES: remove url and service fields from final result
 	# *********************************************************
 	# NOTES: THIS FUNCTION IS A MESS ... NEEDS REFACTORING
-	#		 add urls:{}
-	#		 pop/add status:{}
 	#		 ensure merge: r1->r2 or rev
 	# *********************************************************
 	def merge(self, r1,r2):
-		result = r1		
+		if 'urls' not in r1:
+			r1.update({'urls':{r1['service']:r1['url']}})	
+		r2.update({'urls':{r2['service']:r2['url']}})
 
-		# need to add the urls field in the result object
-		if 'urls' not in result:
-			result.update({'urls':{r1['service']:r1['url']}})
-		if 'urls' not in r2: 
-			r2.update({'urls':None})
-			#r2.update({'urls':{}})
-		
+		if type(r1['status']) != dict:
+			r1['status'] = {r1['service']:r1['status']}
+
 		# merge r1 and r2
-		result = dict((k,v if k in r2 and r2[k] in [None, ''] else r2[k]) for k,v in result.items())
+		result = dict((k,v if k in r1 and r1[k] in [None, ''] else r1[k]) for k,v in r2.items())
 
 
 		# date - select + use /
@@ -750,50 +751,37 @@ class WebDataRetrieval():
 			result['data_inicio']=result['data_inicio'].replace('-','/')
 
 		# cp
-		if result['codigo_postal']:
-			if not '-' in result['codigo_postal']:
-				if r1['codigo_postal'] and r2['codigo_postal']:
-					if r1['codigo_postal'] > r2['codigo_postal']:
-						result['codigo_postal'] = r1['codigo_postal']
-					else:
-						result['codigo_postal'] = r2['codigo_postal']
-
+		if r1['codigo_postal'] and r2['codigo_postal']:
+			if len(r1['codigo_postal']) > len(r2['codigo_postal']):
+				result['codigo_postal'] = r1['codigo_postal']
+			else:
+				result['codigo_postal'] = r2['codigo_postal']
+		
 		# urls		
 		result['urls'].update({r2['service']:r2['url']})
 
 		# status
-		result['status'] = r1['status']
+		result['status'].update({r2['service']:r2['status']})
 
-		if not result['status'] or type(result['status']) is str:
-			if type(r2['status']) is str:
-				result['status'] = {r1['service']:r1['status'], r2['service']:r2['status']}	
-			else:
-				result['status'] = {r1['service']:r1['status']}
-				for key, value in r2['status'].items():
-					result['status'].update({key:value})
-		else:
-			if type(r2['status']) is str:
-				result['status'].update({r2['service']:r2['status']})
-			else:
-				for key, value in r2['status'].items():
-					result['status'].update({key:value})
-
-
+		# data
+		result['data'].update(r2['data'])
+		
 		return result
 
 
-	def getAll(self, name=None,address=None, city=None, country=None, nif=None, key_nif=None, google_key=None):
 
+	def getAll(self, name=None, address=None, city=None, country=None, nif=None, key_nif=None, key_google=None):
 		result = self.newResult()
 		for service in self.SERVICES_BASE_URLS:
 			try:
-				r = self.getData(service, name, nif, key_nif)
+				r = self.getData(service=service, nif=nif, key_nif=key_nif, address=address, name=name, city=city, country=country, key_google=key_google)
 				result = self.merge(result, r)
-			except Exception as e:
+			except Exception:
 				pass	# do not merge
 
 		result.pop('url', None)
 		result.pop('service', None)
+		
 		# dealing with more consequences of the merge mess - remove the none keys
 		if None in result['urls']:
 			del(result['urls'][None])

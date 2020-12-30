@@ -18,12 +18,13 @@
 
 ### Installation
 
-Use the package manager pip to install the necessary packages.
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the necessary packages.
 
 ```bash
 pip install flask
 pip install lxml
 pip install requests
+pip install geopy
 ```
 
 
@@ -60,7 +61,7 @@ pip install requests
 * data		    (miscelaneous data. Ex: google place_id)
 
 
-## Sites
+## Sites / APIs
 * [https://www.nif.pt/](https://www.nif.pt/)
 * [https://www.racius.com/](https://www.racius.com/)
 * [https://codigopostal.ciberforma.pt/](https://codigopostal.ciberforma.pt/)
@@ -119,8 +120,12 @@ Returns a json with the base url of a specific service
 params (all optional):
 * *service*: service
 * *name*: name of the entity
+* *address*: address of the entity
+* *city*: city of the entity
+* *country*: country of the entity
 * *nif*: nif of the entity
 * *key_nif*: key for the nif API rest service
+* *key_google*: key for the google geocoding API rest service
 
 Attention: all parameters are optional. 
 If a service requires a non given parameter, then will either return an error or will simply move on to the next service.

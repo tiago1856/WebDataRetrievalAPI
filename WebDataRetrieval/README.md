@@ -10,10 +10,19 @@ Version: 1.0.0
 
 
 
-# Requirements
+
+## Requirements
 
 * Python 3.7.x
-* modules: lxml, requests
+
+### Installation
+
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the necessary packages.
+
+```bash
+pip install lxml
+pip install requests
+```
 
 
 # Fields
@@ -48,7 +57,7 @@ Version: 1.0.0
 * data		    (miscelaneous data. Ex: google place_id)
 
 
-# Sites
+# Sites / APIs
 * [https://www.nif.pt/](https://www.nif.pt/)
 * [https://www.racius.com/](https://www.racius.com/)
 * [https://codigopostal.ciberforma.pt/](https://codigopostal.ciberforma.pt/)
@@ -82,7 +91,7 @@ returns a dictionary with the all available services and their respective base u
 
 Given string, returns it: lowercase, no portuguese special characters, no extra spaces, no non-alfanumeric chars
 
-* def getData(self, service="racius", name=None, address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
+* def getData(self, service=None, name=None, address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
 
 Returns a dictionary with the data obtained from the selected service.
 
@@ -109,9 +118,9 @@ try:
 	print (s.getData("portugalio", "HEMOVIDA Lda"))
 	print (s.getData("einforma", "HEMOVIDA Lda", 506036944))
 	print (s.getData("nif", "HEMOVIDA Lda", 506036944))
-	print (s.getAll(name="HEMOVIDA Lda", nif=506036944))
+	print (s.getAll(name="HEMOVIDA Lda", nif=506036944, key_google='xxxxx'))
 	print (s.getServices())
-	print (s.getBaseUrls())
+	print (s.getBaseUrls())	
 except Exception as e:
 	print (e)
 ```
