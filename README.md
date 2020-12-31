@@ -28,6 +28,11 @@ pip install requests
 pip install geopy
 ```
 
+Or just:
+
+```bash
+pip install -r requirements.txt
+```
 
 
 ## Retrieved Fields
