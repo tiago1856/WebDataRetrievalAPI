@@ -29,35 +29,37 @@ pip install requests
 
 
 ## Fields
+These are the fields the service tries to retrieve from the web:
 
-* type
-* nome
-* nome_legal
-* nif
-* data_de_inicio    (data inicio de actividade | constituição)
-* morada
-* localidade
-* distrito
-* concelho
-* freguesia
-* codigo_freguesia
-* codigo_postal
-* forma_juridica    (LDA | Cooperativa | Sociedade por Quotas | Sociedade Unipessoal)
-* telefone
-* fax
-* cae
-* actividade         (descricao da actividade)
-* site
-* latitude
-* longitude
-* horario
-* email
-* telemovel
-* estado        (EM ACTIVIDADE | EM INSOLVENCIA | EM REVITALIZAÇÃO | ENCERRADA (Dissolução e Liquidação))
-* status        (OK => some data was fetched	| NOT_FOUNDED => 404 or nothing)
-* url / urls	(url if single service)
-* service	    (servico usado)
-* data		    (miscelaneous data. Ex: google place_id)
+
+* **type**
+* **nome**
+* **nome_legal**
+* **nif**
+* **data_de_inicio**    (data inicio de actividade | constituição)
+* **morada**
+* **localidade**
+* **distrito**
+* **concelho**
+* **freguesia**
+* **codigo_freguesia**
+* **codigo_postal**
+* **forma_juridica**    (LDA | Cooperativa | Sociedade por Quotas | Sociedade Unipessoal)
+* **telefone**
+* **fax**
+* **cae**
+* **actividade**       (descricao da actividade)
+* **site**
+* **latitude**
+* **longitude**
+* **horario**
+* **email**
+* **telemovel**
+* **estado**        (EM ACTIVIDADE | EM INSOLVENCIA | EM REVITALIZAÇÃO | ENCERRADA (Dissolução e Liquidação))
+* **status**        (OK => some data was fetched	| NOT_FOUNDED => 404 or nothing)
+* **url / urls**	(url if single service)
+* **service**	    (servico usado)
+* **data**		    (miscelaneous data. Ex: google place_id)
 
 
 ## Sites / APIs
@@ -146,12 +148,18 @@ except Exception as e:
 ```
 
 
-## Updated Notes:
+## Limitations
+
+* *Nif service*: 1000/month | 100/day | 10/hour | 1/minute
+
+## Update Notes:
 * gescontact: removed
 * guiaempresas: removed
 
-## TODO
+## Todo
 * multithreading
 * more sites
 * in *GetAll*, the google api will be used iff the other services didn't provided the coordinated.
 
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
