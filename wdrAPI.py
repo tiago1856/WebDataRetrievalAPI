@@ -131,6 +131,7 @@ def getAllData():
 # MAIN
 if __name__ == "__main__":
 	print ("\nAttempting to start server ...")
-	app.run(threaded = True)
+	#app.run(threaded = True)
+	app.run(host='0.0.0.0')
 
 
