@@ -18,6 +18,18 @@ import json
 import unicodedata
 import re
 from geopy.geocoders import GoogleV3
+from geopy.exc import (
+    GeocoderQueryError,
+    GeocoderQuotaExceeded,
+    ConfigurationError,
+    GeocoderParseError,
+    GeocoderAuthenticationFailure,
+    GeocoderInsufficientPrivileges,
+    GeocoderTimedOut,
+    GeocoderServiceError,
+    GeocoderUnavailable,
+    GeocoderNotFound
+)
 
 #logger = logging.getLogger("root")
 #logger.setLevel(logging.DEBUG)
@@ -46,7 +58,7 @@ class WebDataRetrieval():
 	# when merging, the highest in the list the highest the priority
 	# so, put the best and more reliable services on top
 	SERVICES_BASE_URLS = {
-		'nif': 'https://www.nif.pt/?json=1&q={}&key={}',
+		'nif': 'https://www.nif.pt/',
 		"racius" : 'https://www.racius.com/',
 		"codigopostal.ciberforma" : 'https://codigopostal.ciberforma.pt/dir/',
 		"portugalio" : 'https://www.portugalio.com/',
@@ -544,104 +556,97 @@ class WebDataRetrieval():
 			raise RuntimeError("Requires a key! Request one at http://www.nif.pt/contactos/api/")
 		
 		# complete the url
-		url = self.SERVICES_BASE_URLS['nif'].format(nif, key_nif)
+		url = 'https://www.nif.pt/?json=1&q={}&key={}'.format(nif, key_nif)
 
 		# fetch the data
 		results = requests.get(url)
 		results = results.json()
-		
+
 		result = self.newResult()
 
 		result['service']  = 'nif'
 		result['status'] = 'NOT FOUNDED'
 		result['url']  = self.SERVICES_BASE_URLS['nif']
-		
-		if results.get('result') and results.get('result') != 'success':
-			if results.get('result') == 'error':
+
+		nif = str(nif)
+
+		if 'result' in  results and results['result'] != 'success':
+			if results['result'] == 'error':
+				result['status'] = 'ERROR'
 				return result
-			raise RuntimeError(results.get('message'))			
+			raise RuntimeError(results['message'])
 		
-		
-		if results.get('records') and results.get('records').get(nif):
-			results = results.get('records').get(nif)	
+		if 'records' in results and nif in results['records']:
+			results = results['records'][nif]
 			
-		
 			result['status'] = 'OK'
 			
-			if results.get('title'):
-				result['nome'] = results.get('title')
-			if results.get('address'):
-				result['morada'] = results.get('address')
+			if 'title' in results:
+				result['nome'] = results['title']
+			if 'address' in results:
+				result['morada'] = results['address']
 			cp=None
 			cp_ext=None
-			if results.get('pc4'):
-				cp = results.get('pc4')
-			if results.get('pc3'):
-				cp_ext = results.get('pc3')
+			if 'pc4' in results:
+				cp = results['pc4']
+			if 'pc3' in results:
+				cp_ext = results['pc3']
 			result['codigo_postal'] = cp
-			if cp_ext:
+			if cp and cp_ext:
 				result['codigo_postal'] += "-" + cp_ext
-			if results.get('city'):
-				result['localidade'] = results.get('city')
-			if results.get('start_date'):
-				result['data_inicio'] = results.get('start_date')
+			if 'city' in results:
+				result['localidade'] = results['city']
+			if 'start_date' in results:
+				result['data_inicio'] = results['start_date']
 			
-			if results.get('activity'):
-				result['actividade'] = results.get('activity')
-			if results.get('status'):
-				result['estado'] = results.get('status')
-			if results.get('cae'):
-				result['cae'] = results.get('cae')
+			if 'activity' in results:
+				result['actividade'] = results['activity']
+			if 'status' in results:
+				result['estado'] = results['status']
+			if 'cae' in results:
+				result['cae'] = results['cae']
 			
-			if results.get('contacts'):
-				if results.get('contacts').get('email'):
-					result['email'] = results.get('contacts').get('email')
-				if results.get('contacts').get('phone'):
-					result['telefone'] = results.get('contacts').get('phone')
-				if results.get('contacts').get('website'):
-					result['site'] = results.get('contacts').get('website')
-				if results.get('contacts').get('fax'):
-					result['fax'] = results.get('contacts').get('fax')
+			if 'contacts' in results:
+				contacts = results['contacts']
+				if 'email' in contacts:
+					result['email'] = contacts['email']
+				if 'phone' in contacts:
+					result['telefone'] = contacts['phone']
+				if 'website' in contacts:
+					result['site'] = contacts['website']
+				if 'fax' in contacts:
+					result['fax'] = contacts['fax']
 			
-			if results.get('structure'):
-				if results.get('structure').get('nature'):
-					result['forma_juridica'] = results.get('contacts').get('nature')
-				#if results.get('structure').get('capital'):
-				#	data['capital'] = results.get('contacts').get('capital')
-				#if results.get('structure').get('capital_currency'):
-				#	data['denominacao'] = results.get('contacts').get('capital_currency')
+			if 'structure' in results:
+				struct = results['structure']
+				if 'nature' in struct:
+					result['forma_juridica'] = struct['nature']
+
 			
 			
-			if results.get('geo'):
-				if results.get('geo').get('region'):
-					result['distrito'] = results.get('geo').get('region')
-				if results.get('geo').get('county'):
-					result['concelho'] = results.get('geo').get('county')
-				if results.get('geo').get('parish'):
-					result['freguesia'] = results.get('geo').get('parish')
+			if 'geo' in results:
+				geo = results['geo']
+				if 'region' in geo:
+					result['distrito'] = geo['region']
+				if 'county' in geo:
+					result['concelho'] = geo['county']
+				if 'parish' in geo:
+					result['freguesia'] = geo['parish']
 			
-			if results.get('place'):
-				if not result['morada'] and results.get('place').get('address'):
-					result['morada'] = results.get('place').get('address')
-				if not result['codigo_postal'] and results.get('place').get('pc4'):
+			if 'place' in results:
+				place = results['place']
+				if not result['morada'] and 'address' in place:
+					result['morada'] = place['address']
+				if not result['codigo_postal'] and 'pc4' in place:
 					cp_ext = None
-					cp = results.get('place').get('pc4')
-					if results.get('place').get('pc3'):
-						cp_ext = results.get('place').get('pc3')
+					cp = place['pc4']
+					if 'pc3' in place:
+						cp_ext = place['pc3']
 					result['codigo_postal'] = cp
 					if cp_ext:
 						result['codigo_postal'] += "-" + cp_ext
-				if not result['localidade'] and results.get('place').get('city'):
-					result['localidade'] = results.get('place').get('city')
-			
-			#if results.get('racius'):
-			#	data['racius'] = results.get('racius')
-			#if results.get('alias'):
-			#	data['alias'] = results.get('alias')	
-			#if results.get('portugalio'):
-			#	data['portugalio'] = results.get('portugalio')
-			
-			
+				if not result['localidade'] and 'city' in place:
+					result['localidade'] = place['city']
 				
 		return result
 
@@ -654,8 +659,8 @@ class WebDataRetrieval():
 		if not address and not name:
 			raise RuntimeError("Requires either a name or an address!")
 
-
-		addr = name if address is None else address
+		addr = "" if name is None else name
+		addr = addr + ("" if address is None else ", " + address)
 		addr = addr + ("" if city is None else ", " + city)
 		addr = addr + ("" if country is None else ", " + country)
 
@@ -663,32 +668,42 @@ class WebDataRetrieval():
 		# start service
 		geolocator_google = GoogleV3(api_key=key_google)
 
-		# fetch the data
-		data = geolocator_google.geocode(addr,exactly_one=False)
-
 		result = self.newResult()
 		result['service']  = 'google'
 		result['status'] = 'NOT FOUNDED'
 		result['url']  = self.SERVICES_BASE_URLS['google']
 
-		if data:
-			if "status" in data and data["status"] =="ZERO_RESULTS":
+		try:
+			# fetch the data
+			data = geolocator_google.geocode(addr,exactly_one=False)
+
+			if data:			
+				answer = data[0].raw
+
+				result['status'] = "OK"		
+				result["morada"] = data[0].address
+				result["latitude"] = data[0].latitude
+				result["longitude"] = data[0].longitude
+				result["codigo_postal"] = ",".join([x['long_name'] for x in answer.get('address_components') 
+										if 'postal_code' in x.get('types')])
+				result["localidade"] = ",".join([x['long_name'] for x in answer.get('address_components') 
+										if 'locality' in x.get('types')]).split(',')[0]
+
+				result["data"].update({'place_id': answer.get("place_id")})
+
 				return result
-			
-			answer = data[0].raw
 
-			result['status'] = "OK"		
-			result["morada"] = data[0].address
-			result["latitude"] = data[0].latitude
-			result["longitude"] = data[0].longitude
-			result["codigo_postal"] = ",".join([x['long_name'] for x in answer.get('address_components') 
-									  if 'postal_code' in x.get('types')])
-			result["localidade"] = ",".join([x['long_name'] for x in answer.get('address_components') 
-									  if 'locality' in x.get('types')]).split(',')[0]
+		except (GeocoderQueryError,GeocoderAuthenticationFailure,GeocoderInsufficientPrivileges,ConfigurationError):
+			result['status'] = 'ACCESS_ERROR'
+		except GeocoderQuotaExceeded:
+			result['status'] = 'QUOTA_EXCEEDED'
+		except GeocoderTimedOut:
+			result['status'] = 'TIME_OUT'
+		except (GeocoderServiceError,GeocoderUnavailable,GeocoderNotFound):
+			result['status'] = 'SERVICE_ERROR'
+		except Exception:
+			result['status'] = 'UNKNOWN_ERROR'
 
-			result["data"].update({'place_id': answer.get("place_id")})
-
-			return result
 		
 		return result
 

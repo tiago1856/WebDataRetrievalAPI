@@ -7,8 +7,9 @@
 
 ## Description
 
-* xxxx
-* 
+This service is designed to obtain, from the web, the most relevant information about an entity.
+For that, it scrapes a number of sites and it also uses some existing APIs to complement the retrieved data.
+ 
 
 
 
@@ -29,7 +30,10 @@ pip install geopy
 
 
 
-## Fields
+## Retrieved Fields
+
+These are the fields the service tries to retrieve from the web:
+
 
 * type
 * nome
@@ -71,22 +75,11 @@ pip install geopy
 * ~~[https://www.gescontact.pt/](https://www.gescontact.pt/)~~
 * ~~[https://guiaempresas.universia.pt/](https://guiaempresas.universia.pt/)~~
 
-*Notes: the google api will be used iff the other services didn't provided the coordinated.*
+
 
 ## Calls
 
-
-```bash
-/getdata?params
-```
-Returns a json with the data retrieved using a specific service
-
-
-```bash
-/getalldata?params
-```
-
-Returns a json with the data retrieved using all available services
+Requests to this API can take the following forms:
 
 
 ```bash
@@ -117,7 +110,29 @@ Returns a json with the all available services and their respective base urls
 Returns a json with the base url of a specific service
 
 
-params (all optional):
+
+
+
+
+
+```bash
+/getdata?params
+```
+Returns a json with the data retrieved using a specific service
+
+
+
+
+
+```bash
+/getalldata?params
+```
+
+Returns a json with the data retrieved using all available services
+
+
+
+**Available parameters:**
 * *service*: service
 * *name*: name of the entity
 * *address*: address of the entity
@@ -127,8 +142,7 @@ params (all optional):
 * *key_nif*: key for the nif API rest service
 * *key_google*: key for the google geocoding API rest service
 
-Attention: all parameters are optional. 
-If a service requires a non given parameter, then will either return an error or will simply move on to the next service.
+Note that all parameters are optional. If a service requires one and this is not given, then will either return an error or, in the case of *getalldata* will simply move on to the next service.
 
 
 
@@ -136,7 +150,13 @@ If a service requires a non given parameter, then will either return an error or
 ## Examples
 
 ```python
-sdsda
+
+http://localhost:5000/api/getbaseurl?service=racius
+
+http://localhost:5000/api/getdata?service=racius&name=HEMOVIDA+Lda&nif=506036944
+
+http://localhost:5000/api/getalldata?name=HEMOVIDA+Lda&nif=506036944&key_google=YOUR_KEY&key_nif=YOUR_KEY
+
 ```
 
 

@@ -1,13 +1,16 @@
+# Web Data Retrieval Module
 
-Version: 1.0.0
+## Version
 
-# Description
+1.0.1
 
-* Given an entity's name and/or nif, tries to retrieve information about that entity from several sites. It returns a json with all the available information.
-* In case nothing is found (maybe the entity doesn't exist), *'status': 'NOT FOUNDED'* or *None*, else 'status': 'OK'*.
-* Both scraping and API services are used.
-* Some services (APIs) require keys in order to function.
 
+## Description
+
+Given an entity's name and/or nif, tries to retrieve information about that entity from several sites. It returns a json with all the available information.
+In case nothing is found (maybe the entity doesn't exist), *'status': 'NOT FOUNDED'* or *None*, else 'status': 'OK'*.
+Both scraping and REST APIs services are used.
+Some REST services require keys in order to function.
 
 
 
@@ -25,7 +28,7 @@ pip install requests
 ```
 
 
-# Fields
+## Fields
 
 * type
 * nome
@@ -57,7 +60,7 @@ pip install requests
 * data		    (miscelaneous data. Ex: google place_id)
 
 
-# Sites / APIs
+## Sites / APIs
 * [https://www.nif.pt/](https://www.nif.pt/)
 * [https://www.racius.com/](https://www.racius.com/)
 * [https://codigopostal.ciberforma.pt/](https://codigopostal.ciberforma.pt/)
@@ -69,64 +72,86 @@ pip install requests
 
 
 
-# Functions
+## Main Functions
 
-* def getServices()
-
+```python
+def getServices()
+```
 Returns a list of all available services/websites.
 
-* def getBaseUrl(service)
+
+```python
+def getBaseUrl(service)
+```
 
 Returns the base url of a specific service/website.
 
-* def getBaseUrls()
+
+```python
+def getBaseUrls()
+```
 
 Returns a list of all services and corresponding base urls.
 
-* def GetSUs()
 
-returns a dictionary with the all available services and their respective base urls
+```python
+def GetSUs()
+```
 
-* def sanitize(name_or_address)
+Returns a dictionary with the all available services and their respective base urls
+
+
+```python
+def sanitize(name_or_address)
+```
 
 Given string, returns it: lowercase, no portuguese special characters, no extra spaces, no non-alfanumeric chars
 
-* def getData(self, service=None, name=None, address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
+
+```python
+def getData(self, service=None, name=None, address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
+```
 
 Returns a dictionary with the data obtained from the selected service.
 
-* def getAll(self, name=None,address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
+
+```python
+def getAll(self, name=None,address=None, city=None, country=None, nif=None, key_nif=None, google_key=None)
+```
 
 Returns a dictionary with the data obtained from all the available services.
 
 
 
-# Updated Notes:
-* gescontact: removed
-* guiaempresas: removed
 
 
-# Example
+## Example
 
 ```python
 import WebDataRetrieval as dr
 
 try:
-	s = dr.WebDataRetrieval()	
 	print (s.getData("racius", "HEMOVIDA Lda"))
-	print (s.getData("codigopostal.ciberforma", "HEMOVIDA Lda", 506036944))
+	print (s.getData("codigopostal.ciberforma", "HEMOVIDA Lda", nif=506036944))
 	print (s.getData("portugalio", "HEMOVIDA Lda"))
-	print (s.getData("einforma", "HEMOVIDA Lda", 506036944))
-	print (s.getData("nif", "HEMOVIDA Lda", 506036944))
-	print (s.getAll(name="HEMOVIDA Lda", nif=506036944, key_google='xxxxx'))
+	print (s.getData("einforma", "HEMOVIDA Lda", nif=506036944))
+	print (s.getData("nif", "HEMOVIDA Lda", nif=506036944))
+	print (s.getAll(name="HEMOVIDA Lda", nif=506036944, key_google=YOUR_KEY))
 	print (s.getServices())
 	print (s.getBaseUrls())	
+	print (s.getData("google", name="HEMOVIDA Lda", country="portugal", key_google=YOUR_KEY))
+	print (s.getData("nif", name="HEMOVIDA Lda", nif=506036944, key_nif=YOUR_KEY))
 except Exception as e:
 	print (e)
 ```
 
-# TODO
+
+## Updated Notes:
+* gescontact: removed
+* guiaempresas: removed
+
+## TODO
 * multithreading
 * more sites
-* in GetAll, the google api will be used iff the other services didn't provided the coordinated.
+* in *GetAll*, the google api will be used iff the other services didn't provided the coordinated.
 

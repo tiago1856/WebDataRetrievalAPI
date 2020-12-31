@@ -105,7 +105,7 @@ def getData():
 		return jsonify({"error": "You must specify a service!"})
 
 
-# http://localhost:5000/api/getalldata?name=HEMOVIDA+Lda&nif=506036944
+#http://localhost:5000/api/getalldata?name=HEMOVIDA+Lda&nif=506036944&key_google=YOUR_KEY&key_nif=YOUR_KEY
 @app.route('/api/getalldata')
 def getAllData():
 	s = dr.WebDataRetrieval()
