@@ -64,7 +64,7 @@ These are the fields the service tries to retrieve from the web:
 * **email**
 * **telemovel**
 * **estado**        (EM ACTIVIDADE | EM INSOLVENCIA | EM REVITALIZAÇÃO | ENCERRADA (Dissolução e Liquidação))
-* **status**        (OK => some data was fetched	| NOT_FOUNDED => 404 or nothing)
+* **status**        (OK, NOT_FOUNDED, [ACCESS_ERROR, QUOTA_EXCEEDED, TIME_OUT, SERVICE_ERROR, UNKNOWN_ERROR])
 * **url / urls**	(url if single service)
 * **service**	    (servico usado)
 * **data**		    (miscelaneous data. Ex: google place_id)
