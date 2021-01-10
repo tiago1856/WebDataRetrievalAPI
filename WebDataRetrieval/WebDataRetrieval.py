@@ -565,7 +565,7 @@ class WebDataRetrieval():
 		result = self.newResult()
 
 		result['service']  = 'nif'
-		result['status'] = 'NOT FOUNDED'
+		result['status'] = 'NOT_FOUNDED'
 		result['url']  = self.SERVICES_BASE_URLS['nif']
 
 		nif = str(nif)
@@ -670,7 +670,7 @@ class WebDataRetrieval():
 
 		result = self.newResult()
 		result['service']  = 'google'
-		result['status'] = 'NOT FOUNDED'
+		result['status'] = 'NOT_FOUNDED'
 		result['url']  = self.SERVICES_BASE_URLS['google']
 
 		try:
