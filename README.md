@@ -82,7 +82,7 @@ These are the fields the service tries to retrieve from the web:
 
 
 
-## Calls
+## Endpoints
 
 Requests to this API can take the following forms:
 
